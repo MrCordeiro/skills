@@ -8,7 +8,11 @@ A skill is a Markdown file with a YAML frontmatter block. The agent reads the `d
 
 ```
 skill/
-└── socratic-quiz.md   ← name + description (frontmatter) + behaviour (body)
+├── socratic-quiz.md   ← single-file skill: frontmatter + body
+└── draw/              ← folder skill: SKILL.md + supporting files
+    ├── SKILL.md
+    ├── references/
+    └── lib/
 ```
 
 Skills live in the `skill/` directory and follow a consistent format so any supporting agent or tool can discover and load them automatically.
@@ -18,6 +22,7 @@ Skills live in the `skill/` directory and follow a consistent format so any supp
 | Skill | Trigger phrases | Description |
 |-------|----------------|-------------|
 | [socratic-quiz](skill/socratic-quiz.md) | "socratic quiz", "let's brainstorm", "quiz me", "help me think this through", "don't just tell me" | Run a problem-solving session as a Socratic dialogue — the agent asks questions instead of handing over answers. |
+| [draw](skill/draw/SKILL.md) | "draw", "diagram", "flowchart", "user flow", "heat map", "status board", "file tree" | Make a diagram as a PNG (tables, heat maps, pipelines, file trees) or an editable Excalidraw file (flows, system maps). |
 
 ## How to use
 

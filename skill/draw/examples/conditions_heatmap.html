@@ -1,0 +1,256 @@
+<!--
+  Example: heat map (table with log-scale cell colours).
+
+  Pattern: rows = categories, columns = dimensions, cells = counts.
+  Empty cells show a faint dot. One cell has a teal border and a check mark
+  to mark the item that is shipped.
+  Use for: any matrix where the reader must compare counts by colour.
+
+  Render (see references/html-render.md):
+      import sys
+      sys.path.insert(0, "<skill-dir>/lib")
+      from html_render import render_html_to_png
+      render_html_to_png(
+          "<skill-dir>/examples/conditions_heatmap.html",
+          "<temp-dir>/conditions_heatmap.png",
+          viewport=(1280, 800),
+      )
+-->
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+/* === assets/base.css (inlined, do not edit here) === */
+:root {
+  /* fonts: tiko.org uses Stabil Grotesk (body) and Noto Serif (headings).
+     Stabil Grotesk is a licensed font, so most machines use the fallbacks. */
+  --font-sans: "Stabil Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI",
+               "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Noto Serif", Georgia, "Times New Roman", serif;
+  --font-mono: "SF Mono", Menlo, "Cascadia Mono", Consolas, "DejaVu Sans Mono", monospace;
+
+  /* tiko brand colours */
+  --tiko-plum: #812578;
+  --tiko-plum-dark: #631e5d;
+  --tiko-magenta: #b83096;
+  --tiko-teal: #3ec2cf;
+  --tiko-teal-dark: #1996a2;
+  --tiko-grey-purple: #6f677e;
+  --tiko-lilac-grey: #e5e3e8;
+  --tiko-ink: #25222a;
+
+  /* page, borders, text */
+  --bg-page: #ffffff;
+  --bg-card: #ffffff;
+  --bg-subtle: #f6f5f8;     /* table headers, code backgrounds */
+  --border: var(--tiko-lilac-grey);
+  --fg-default: var(--tiko-ink);
+  --fg-muted: var(--tiko-grey-purple);
+  --fg-faint: #b5afbd;
+
+  /* status colours (left border + matching light background) */
+  --status-wired: var(--tiko-teal-dark);   /* done, shipped, working */
+  --status-wired-bg: #e6f7f9;
+  --status-raw: #e0a100;                   /* partial, at risk (functional, not brand) */
+  --status-raw-bg: #fff8e1;
+  --status-off: #b5afbd;                   /* not started, not used */
+  --status-off-bg: #f6f5f8;
+  --status-accent: var(--tiko-plum);       /* system step, no status */
+  --status-accent-bg: #f6edf5;
+  --status-accent-fg: var(--tiko-plum-dark);
+
+  /* sizes */
+  --radius: 6px;
+  --card-pad: 8px 12px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-page);
+  color: var(--fg-default);
+  margin: 0;
+  padding: 28px;
+  box-sizing: border-box;
+}
+
+* { box-sizing: border-box; }
+
+/* page titles */
+h1 { font-family: var(--font-serif); font-size: 24px; margin: 0 0 6px 0; font-weight: 400; color: var(--fg-default); }
+.subtitle, .footnote { color: var(--fg-muted); font-size: 12px; }
+.subtitle { margin-bottom: 18px; }
+.footnote { margin-top: 18px; max-width: 1000px; }
+
+/* code-like inline */
+code { background: var(--bg-subtle); padding: 1px 5px; border-radius: 3px;
+       font-family: var(--font-mono); font-size: 0.9em; }
+
+/* the main card: used in pipelines, card grids, status boards */
+.box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--card-pad);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fg-default);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.box .marker { font-size: 11px; flex-shrink: 0; }
+
+/* status variants: colour the left border + tint the background */
+.box.wired  { border-left: 4px solid var(--status-wired);  background: var(--status-wired-bg); }
+.box.raw    { border-left: 4px solid var(--status-raw);    background: var(--status-raw-bg); }
+.box.off    { border-left: 4px solid var(--status-off);    background: var(--status-off-bg); color: var(--fg-muted); }
+.box.accent { border-color: var(--status-accent);          background: var(--status-accent-bg); color: var(--status-accent-fg); }
+
+/* vertical stack of cards (one column) */
+.stack { display: flex; flex-direction: column; gap: 6px; }
+
+/* column header above a stack */
+.col-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* arrow column: narrow grid column with a centred arrow character */
+.arrow {
+  font-size: 18px;
+  color: var(--fg-faint);
+  line-height: 1;
+  padding-top: 28px;
+  text-align: center;
+}
+
+/* legend chips at the top of pipeline diagrams */
+.legend {
+  display: flex; gap: 16px; align-items: center;
+  font-size: 12px; margin: 0 0 18px 0;
+}
+.legend .chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+}
+.legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend .dot.wired { background: var(--status-wired); }
+.legend .dot.raw   { background: var(--status-raw); }
+.legend .dot.off   { background: var(--status-off); }
+
+/* heat-map cells: use an inline style for each cell's background */
+table.heatmap { border-collapse: collapse; font-size: 13px; }
+table.heatmap th, table.heatmap td {
+  padding: 8px 10px; text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table.heatmap th.rowhead {
+  text-align: left; font-family: var(--font-mono); font-weight: 500;
+  background: var(--bg-subtle); border-right: 1px solid var(--border);
+  width: 160px;
+}
+table.heatmap th.colhead {
+  text-align: center; font-weight: 500; color: var(--fg-muted);
+  background: var(--bg-subtle); font-family: var(--font-mono);
+  font-size: 11px; padding: 6px 10px; border-bottom: 1px solid var(--border);
+}
+table.heatmap td.cell { border: 1px solid var(--bg-card); font-size: 12px; min-width: 70px; }
+table.heatmap td.cell.empty { background: var(--bg-page); color: var(--fg-faint); text-align: center; }
+
+/* the heat-map colour scale in the legend: white to tiko plum */
+.ramp {
+  display: inline-block; width: 240px; height: 12px;
+  background: linear-gradient(to right, rgb(255,255,255), rgb(129,37,120));
+  border: 1px solid var(--border); border-radius: 2px;
+}
+
+/* === diagram-specific === */
+.ship { display: inline-block; margin-left: 4px; color: inherit; font-weight: 700; }
+.legend { margin-top: 16px; font-size: 11px; color: var(--fg-muted); }
+</style></head><body>
+
+<h1>Family × container — corpus occurrence heat-map</h1>
+<div class="subtitle">Each cell = occurrence count for that family in that container kind. Colour scale is log10. The teal-bordered cell is the one shipped today (<code>pax_count</code> on room rates).</div>
+
+<table class="heatmap">
+<tr>
+  <th class="rowhead"></th>
+  <th class="colhead">rate</th><th class="colhead">rate_modifier</th><th class="colhead">room</th><th class="colhead">offer</th>
+  <th class="colhead">child_policy</th><th class="colhead">supplement</th><th class="colhead">fee</th><th class="colhead">activity</th>
+  <th class="colhead">service</th><th class="colhead">transfer</th><th class="colhead">property</th>
+</tr>
+<!--
+  Each cell's `style="background:rgb(R,G,B);color:#fff_or_#111"` is computed.
+  See the generator snippet at the bottom of this file for the rgb() formula.
+  Empty cells use class="cell empty" and render as a faint dot.
+
+  This file embeds the cells for the conditions corpus snapshot from
+  2026-06-01. To regenerate against a fresher corpus, run the generator.
+-->
+<tr>
+  <th class="rowhead">occupancy_type</th>
+  <td class="cell" style="background:rgb(129,37,120);color:#ffffff">34,303</td>
+  <td class="cell" style="background:rgb(133,43,124);color:#ffffff">24,578</td>
+  <td class="cell" style="background:rgb(133,45,124);color:#ffffff">23,331</td>
+  <td class="cell" style="background:rgb(138,53,129);color:#ffffff">15,830</td>
+  <td class="cell" style="background:rgb(163,96,157);color:#25222a">1,954</td>
+  <td class="cell empty">·</td>
+  <td class="cell" style="background:rgb(187,138,182);color:#25222a">269</td>
+  <td class="cell empty">·</td>
+  <td class="cell" style="background:rgb(183,131,178);color:#25222a">378</td>
+  <td class="cell empty">·</td>
+  <td class="cell" style="background:rgb(189,141,184);color:#25222a">226</td>
+</tr>
+<tr>
+  <th class="rowhead">pax_count</th>
+  <td class="cell" style="background:rgb(157,86,150);color:#ffffff;border:2px solid var(--status-wired);">3,240<span class="ship">✓</span></td>
+  <td class="cell" style="background:rgb(188,139,183);color:#25222a">249</td>
+  <td class="cell" style="background:rgb(190,142,185);color:#25222a">218</td>
+  <td class="cell empty">·</td>
+  <td class="cell empty">·</td>
+  <td class="cell empty">·</td>
+  <td class="cell empty">·</td>
+  <td class="cell" style="background:rgb(185,135,180);color:#25222a">308</td>
+  <td class="cell" style="background:rgb(182,130,177);color:#25222a">393</td>
+  <td class="cell empty">·</td>
+  <td class="cell empty">·</td>
+</tr>
+<!-- Additional rows are left out of this example. -->
+</table>
+
+<div class="legend">
+  <span>0</span>
+  <span class="ramp"></span>
+  <span>34,303 (max)</span>
+  <span style="margin-left: 24px; padding: 2px 8px; border:2px solid var(--status-wired); border-radius: 3px; color: var(--status-wired); font-weight: 600;">✓ shipped</span>
+</div>
+
+<div class="footnote">
+Reading the heat-map: the <code>rate</code> + <code>rate_modifier</code> columns concentrate most pricing-impactful conditions. The shipped cell is one of ~80 populated cells in the matrix.
+</div>
+
+<!--
+  Cell colour formula (also in references/html-render.md):
+
+      import math
+      log_max = math.log10(max_count)
+
+      def colour_for(count):
+          if count == 0:
+              return ("#fafafa", "#d1d5db")  # bg, text
+          t = math.log10(count) / log_max  # 0..1
+          r = int(255 - (255 - 129) * t)
+          g = int(255 - (255 -  37) * t)
+          b = int(255 - (255 - 120) * t)
+          fg = "#25222a" if t < 0.75 else "#ffffff"
+          return (f"rgb({r},{g},{b})", fg)
+
+  Then write rows out as
+      <td class="cell" style="background:{bg};color:{fg}">{count:,}</td>
+-->
+
+</body></html>
