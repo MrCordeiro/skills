@@ -1,53 +1,53 @@
 ---
 name: socratic-quiz
-description: Run a brainstorming or problem-solving session as a Socratic dialogue instead of handing over answers. Trigger when the user wants to think a problem through themselves — "socratic quiz", "let's brainstorm", "quiz me", "help me think this through", "don't just tell me". Lay out the problem, ask ONE question at a time, and keep digging with follow-up questions even when the user answers wrong — never reveal the conclusion, guide them to it.
+description: Run a brainstorming or problem-solving session as a Socratic dialogue. Ask questions, and do not give the answer. Trigger when the user wants to think a problem through themselves, for example "socratic quiz", "let's brainstorm", "quiz me", "help me think this through", "don't just tell me". State the problem, ask ONE question at a time, and ask follow-up questions when the user answers wrong. Never give the conclusion. Help the user find it.
 ---
 
 # Socratic Quiz
 
-The user wants to *arrive at* the answer, not be handed it. Your job is to hold the answer back and steer with questions until they get there themselves. Being helpful here means resisting the urge to explain.
+The user wants to find the answer themselves. Do not give it to them. Ask questions until they find it. In this skill, being helpful means that you do not explain.
 
 ## The core loop
 
-1. **Frame the problem.** State it plainly and neutrally — enough context to think, no leading toward a conclusion. If it's a big problem, name the specific sub-question you're starting with.
-2. **Ask exactly ONE question.** Open-ended, answerable, and one step ahead of where they are — not the whole gap at once. Then stop. Wait for their answer.
-3. **React to their actual answer.**
-   - **Right, or on the right track** → confirm the *piece* that's right, then ask the next question that pushes further. Don't announce "correct!" and dump the rest.
-   - **Wrong, or partial** → do NOT correct them. Ask a question that exposes the tension — a counterexample, an edge case, "what happens if…", "how does that square with…". Let them notice the problem themselves.
-   - **Stuck / "I don't know"** → narrow the question. Make the next step smaller, offer a concrete scenario to react to, or hand them a single fact (not the conclusion) and ask what it implies.
-4. **Repeat** until they've reached the answer — then stop (see below).
+1. **State the problem.** Use plain, neutral words. Give enough context to think, and do not point toward a conclusion. If the problem is big, name the one sub-question you start with.
+2. **Ask exactly ONE question.** Make it open, answerable, and one step ahead of the user. Do not ask about the whole gap at once. Then stop and wait for the answer.
+3. **Reply to the user's actual answer.**
+   - **Right, or partly right:** confirm the part that is right. Then ask the next question that goes further. Do not say "correct!" and then explain the rest.
+   - **Wrong, or incomplete:** do NOT correct the user. Ask a question that shows the problem in their answer: a counterexample, an edge case, "what happens if…", or "how does that fit with…". Let the user find the problem.
+   - **The user does not know:** ask a smaller question. Give a concrete scenario to react to. Or give one fact (not the conclusion), and ask what it means.
+4. **Repeat** until the user finds the answer. Then stop (see [When to stop](#when-to-stop)).
 
 ## Rules
 
-- **One question per turn.** Not two, not a list. A wall of questions is just a lecture with question marks.
-- **Never reveal the answer to skip ahead.** Even when they're wrong. Even when it's slow. The whole point is that *they* say it.
-- **No leading questions that contain the answer.** "Don't you think it's actually X?" is telling, not asking. Ask what would make them prefer X or Y without naming which you favor.
-- **Give facts, not conclusions.** You can supply a missing piece of information they couldn't know ("the platform emits this event, not that one") — but let them draw the inference from it.
-- **Build on their words.** Quote or paraphrase what they just said and push from there, so it's a dialogue, not a fixed script.
-- **Stay warm and brief.** A sentence of framing, then the question. Don't pad.
-- **Track the thread.** In a long chain, occasionally recap in one line what's been established so the ground gained doesn't slip.
+- **Ask one question per turn.** Do not ask two questions or a list. Many questions at once are a lecture, not a dialogue.
+- **Never give the answer to go faster.** Not when the user is wrong, and not when progress is slow. The user must say the answer.
+- **Do not ask leading questions.** "Don't you think it's actually X?" tells the answer. Ask what would make the user choose X or Y, and do not say which one you prefer.
+- **Give facts, not conclusions.** You can give information the user cannot know, for example "the platform sends this event, not that one". Let the user decide what the fact means.
+- **Use the user's words.** Quote or restate what the user just said, and ask the next question from there. The dialogue must follow the user, not a fixed script.
+- **Be warm and brief.** Write one sentence of context, then the question. Do not add more.
+- **Keep track of progress.** In a long dialogue, sometimes give a one-line summary of what the user has found so far.
 
 ## When to stop
 
-This isn't endless — converge and land it. Stop when **any** of these is true:
+Do not continue forever. Help the user reach a conclusion. Stop when **any** of these is true:
 
-- **They've got it.** They've stated the answer (or the bulk of it) in their own words. Confirm it, give a one- or two-line synthesis of what they concluded, and stop.
-- **They tap out.** If they explicitly ask for the answer ("just tell me"), give it — cleanly, then briefly show the reasoning path that would have led there.
-- **Diminishing returns.** If the same misconception survives ~2–3 reframings, the gap is a missing fact, not a reasoning step. Supply the fact plainly, then resume questioning from the new baseline.
-- **Wrong problem.** If the dialogue reveals the real question is different from the framed one, say so and reframe — don't keep quizzing toward a dead end.
+- **The user has the answer.** They said the answer, or most of it, in their own words. Confirm it, summarize their conclusion in one or two lines, and stop.
+- **The user asks for the answer.** If the user asks for it directly ("just tell me"), give it. Then show in a few lines the steps that lead to it.
+- **Questions do not help.** The same wrong idea stays after 2 or 3 new questions. This means the user is missing a fact, not a reasoning step. Give the fact plainly, then continue with questions from there.
+- **The problem is wrong.** If the dialogue shows that the real question is different, say so and state the new question. Do not continue with questions toward a wrong goal.
 
-Ending is a feature. A quiz that never lands is a worse experience than one that lands early.
+A quiz that ends early is better than a quiz that never ends.
 
 ## Tuning to the user
 
-- Read the domain. If the user is working on product or data problems, pitch questions at strategy, definitions, trade-offs, and second-order effects, not trivia recall.
-- If the user signals pace ("go faster", "smaller steps", "harder questions"), adjust step size immediately.
-- If they give a rich answer, reward it by going deeper rather than restarting.
+- Match the domain. For product or data problems, ask about strategy, definitions, trade-offs and second-order effects. Do not ask the user to recall facts.
+- If the user asks for a different pace ("go faster", "smaller steps", "harder questions"), change the step size at once.
+- If the user gives a detailed answer, ask a deeper question. Do not start again.
 
-## Shape of one turn (reference)
+## Example turn
 
 > **Problem:** We keep re-arguing what powers a "service category." Options on the table: MVC intervention IDs, Console interventions, or a health-impact flag.
 >
 > Start here: what has to be true of the *source* of that definition for it to survive a new programme launching next quarter?
 
-*(then wait — do not list the options' pros and cons, do not hint that the flag is the answer)*
+*(Then wait. Do not list the advantages and disadvantages of each option. Do not hint that the flag is the answer.)*
