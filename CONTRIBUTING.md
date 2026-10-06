@@ -6,6 +6,19 @@ Thanks for wanting to add a skill! Skills are short, focused Markdown files that
 
 Each skill is a single Markdown file in the `skill/` directory. Use `skill/_template.md` as your starting point.
 
+A skill that needs scripts, templates or long reference material is a folder instead:
+
+```
+skill/<skill-name>/
+├── SKILL.md        ← required: same frontmatter and sections as a single-file skill
+├── references/     ← guides the agent reads only when SKILL.md tells it to
+├── lib/            ← helper scripts
+├── assets/         ← files the agent copies into its output (CSS, templates)
+└── examples/       ← complete worked examples
+```
+
+In `SKILL.md`, refer to supporting files by their path from the skill folder (for example `references/html-render.md`). Use a folder only when the skill needs supporting files.
+
 ### Frontmatter contract
 
 Every skill file **must** begin with a YAML frontmatter block:
